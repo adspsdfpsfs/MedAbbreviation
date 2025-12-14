@@ -31,7 +31,7 @@ export default function App() {
   const [contextHint, setContextHint] = useState("");
   const contextInputRef = useRef<HTMLInputElement>(null);
 
-  // 👇 【新增】调用防抖钩子，延迟 300 毫秒
+  // 调用防抖钩子，延迟 300 毫秒
   const debouncedQuery = useDebounce(query, 300);
 
   // State for Medical Data
@@ -55,7 +55,7 @@ export default function App() {
 
   // Local Search Logic
   const localResults = useMemo(() => {
-    // 👇 【修改 1】让 useMemo 依赖于延迟后的 debouncedQuery
+    // 依赖于延迟后的 debouncedQuery
     if (!debouncedQuery.trim()) return [];
     const q = debouncedQuery.toUpperCase().trim();
     return allMedicalData.filter(
@@ -118,23 +118,11 @@ export default function App() {
     }
   }, [query]);
 
-  // 👇 【修改 2】让自动聚焦的逻辑依赖于 debouncedQuery
-  useEffect(() => {
-    // 只有当 debouncedQuery 确定有内容，且搜索结果确定为空，才跳转焦点
-    if (
-      debouncedQuery.trim() &&
-      localResults.length === 0 &&
-      !aiResult &&
-      !aiLoading &&
-      contextInputRef.current
-    ) {
-      contextInputRef.current.focus();
-    }
-  }, [debouncedQuery, localResults.length, aiResult, aiLoading]); // 依赖项改为 debouncedQuery
+  // 🚨 【已删除】原自动聚焦的 useEffect 块已移除。
 
   return (
     <div className="min-h-screen flex flex-col bg-cream relative selection:bg-honey-400 selection:text-navy-900">
-      {/* Decorative Blobs - Keeping red ONLY in background decoration (保持不变) */}
+      {/* Decorative Blobs (保持不变) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-[-5%] left-[-5%] w-[400px] h-[400px] bg-navy-100/50 rounded-full mix-blend-multiply filter blur-[60px]"></div>
         <div className="absolute top-[10%] right-[-5%] w-[300px] h-[300px] bg-honey-100/60 rounded-full mix-blend-multiply filter blur-[60px]"></div>
@@ -175,7 +163,7 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-grow max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 sm:py-16 relative z-10">
-        {/* Search Section */}
+        {/* Search Section (保持不变) */}
         <div className="mb-12 text-center">
           <h2 className="text-4xl sm:text-5xl font-black text-navy-900 mb-6 tracking-tight">
             医疗缩写查询
@@ -259,6 +247,7 @@ export default function App() {
                 <div className="max-w-md mx-auto space-y-4">
                   <div className="text-left bg-navy-50/50 p-2 rounded-xl border border-navy-900/10 focus-within:ring-2 focus-within:ring-navy-900 focus-within:border-transparent transition-all">
                     <div className="relative">
+                      {/* ⚠️ 确保这个输入框中没有 autoFocus={true} 属性 */}
                       <input
                         ref={contextInputRef}
                         type="text"
