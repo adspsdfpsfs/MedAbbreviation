@@ -1,0 +1,5 @@
+{
+  "name": "MedDict - 医疗缩写查询助手",
+  "description": "A specialized medical abbreviation lookup tool focusing on clinical documentation, offering instant definitions and AI-powered explanations.",
+  "requestFramePermissions": []
+}
