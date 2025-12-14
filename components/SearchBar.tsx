@@ -23,18 +23,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
+  // 核心逻辑：这个函数只负责将输入框内容传递给 onChange，但不对内容做任何处理 (例如 toUpperCase)
   const handleInputChange = (inputValue: string) => {
-    // 关键逻辑：
-    // 只有当非中文输入时 (isComposing=false)，我们才执行大写转换。
-    // 如果是中文输入，我们只是将原始值(拼音/汉字)传给 onChange，让输入法工作。
+    // 无论是中文输入还是英文输入，都直接将原始值传递给 onChange。
+    // 这确保了拼音和英文都能实时显示。
+    onChange(inputValue);
+  };
 
-    if (!isComposing) {
-      onChange(inputValue.toUpperCase());
-    } else {
-      // 正在输入中文时，只传原始值，不转换大写，避免打断输入法。
-      // 注意：这里仍然需要调用 onChange，否则输入框里就看不到拼音了。
-      onChange(inputValue);
-    }
+  // 最终处理逻辑：将最终值（无论是英文还是汉字）转为大写
+  const handleFinalChange = (finalValue: string) => {
+    // 这里的逻辑只在中文输入确定 (onCompositionEnd) 或非中文输入时执行。
+    // 我们在 onCompositionEnd 中处理了最终转换，所以这里可以简化。
+    onChange(finalValue.toUpperCase());
   };
 
   return (
@@ -64,20 +64,28 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             className="block w-full pl-14 pr-12 py-5 bg-transparent border-none rounded-xl placeholder-navy-900/30 focus:outline-none focus:ring-0 text-xl text-navy-900 font-bold"
             placeholder="输入缩写 (例如: ORIF, NBM...)"
             value={value}
-            // 👇 修复点：将大写转换逻辑移入 handleInputChange
+            // 👇 修复点：确保所有输入逻辑都被封装
             onCompositionStart={() => setIsComposing(true)}
             onCompositionEnd={(e) => {
-              // 组合结束后，确保将最终值转为大写
+              // 组合结束后，处理输入值 (在这里转大写)
               setIsComposing(false);
-              onChange(e.currentTarget.value.toUpperCase());
+              handleFinalChange(e.currentTarget.value);
             }}
-            onChange={(e) => handleInputChange(e.target.value)} // 调用新的处理函数
+            onChange={(e) => {
+              // 如果是中文输入，只实时显示拼音 (handleInputChange 会处理)。
+              // 如果是非中文输入，我们也走这个通道，handleFinalChange 确保最终转大写。
+              if (!isComposing) {
+                handleFinalChange(e.target.value);
+              } else {
+                handleInputChange(e.target.value);
+              }
+            }}
             onKeyDown={handleKeyDown}
           />
           <div className="absolute inset-y-0 right-0 flex items-center pr-3">
             {value && (
               <button
-                // 清空按钮的 onChange 必须保持不变，因为它不是输入事件
+                // 清空按钮的逻辑保持不变
                 onClick={() => onChange("")}
                 className="p-2 text-navy-900/20 hover:text-navy-900 rounded-full hover:bg-navy-50 transition-colors"
               >
